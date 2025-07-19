@@ -2,16 +2,26 @@ import streamlit as st
 import time
 from langgraph_logic import build_graph
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Set your Gemini API key
-if "GOOGLE_API_KEY" not in os.environ:
+if not os.getenv("GOOGLE_API_KEY"):
     if "GOOGLE_API_KEY" in st.secrets:
         os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
     else:
-        os.environ["GOOGLE_API_KEY"] = st.text_input("Enter your Gemini API key:", type="password")
+        api_key = st.text_input("Enter your Gemini API key:", type="password")
+        if api_key:
+            os.environ["GOOGLE_API_KEY"] = api_key
 
-# Initialize the LangGraph
-graph = build_graph()
+# Initialize the LangGraph only if API key is set
+if os.getenv("GOOGLE_API_KEY"):
+    graph = build_graph()
+else:
+    st.error("Please set your Google API key to continue")
+    st.stop()
 
 # Simulated ward storage (in-memory)
 if "wards" not in st.session_state:
